@@ -2,9 +2,9 @@ name: OCI Ampere A1 Auto-Claimer
 
 on:
   schedule:
-    # Runs every 10 minutes automatically 24/7/365 in Microsoft/GitHub's US datacenter
+    # Runs automatically every 10 minutes 24/7 in GitHub's datacenter
     - cron: '*/10 * * * *'
-  workflow_dispatch: # Allows you to click "Run workflow" manually anytime
+  workflow_dispatch: # Allows manual trigger from GitHub web anytime
 
 jobs:
   claim-server:
@@ -50,98 +50,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: "🎉 YOUR ORACLE SERVER IS CREATED! (nauman-studio-vps)",
-              body: `Hello Nauman,\n\n🎉 GREAT NEWS! Your Always-Free 4-core, 24 GB RAM Ampere A1 server (nauman-studio-vps) has just been successfully created in Oracle Cloud (${process.env.OCI_REGION || 'us-ashburn-1'})!\n\nInstance OCID: ${{ steps.claim.outputs.instance_id }}\nAvailability Domain: ${{ steps.claim.outputs.ad_name }}\nTarget Notification: akmalnauman396@gmail.com\n\nYou can now log in to your Oracle Console or connect via SSH to deploy PeakCut!`
+              body: `Hello Nauman,\n\n🎉 GREAT NEWS! Your Always-Free 4-core, 24 GB RAM Ampere A1 server (nauman-studio-vps) has just been successfully created in Oracle Cloud (${process.env.OCI_REGION || 'us-ashburn-1'}) after ${{ steps.claim.outputs.attempt_count }} attempts!\n\nInstance OCID: ${{ steps.claim.outputs.instance_id }}\nAvailability Domain: ${{ steps.claim.outputs.ad_name }}\nTarget Notification: akmalnauman396@gmail.com\n\nYou can now log in to your Oracle Console or connect via SSH to deploy PeakCut!`
             });
-name: OCI Ampere A1 Auto-Claimer
-
-on:
-  schedule:
-    # Runs every 10 minutes automatically 24/7/365 in Microsoft/GitHub's US datacenter
-    - cron: '*/10 * * * *'
-  workflow_dispatch: # Allows you to click "Run workflow" manually anytime
-
-jobs:
-  claim-server:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      issues: write
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install OCI Python SDK
-        run: |
-          pip install --upgrade pip
-          pip install oci
-
-      - name: Run Provisioning Loop
-        id: claim
-        env:
-          OCI_USER_OCID: ${{ secrets.OCI_USER_OCID }}
-          OCI_TENANCY_OCID: ${{ secrets.OCI_TENANCY_OCID }}
-          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
-          OCI_KEY_CONTENT: ${{ secrets.OCI_KEY_CONTENT }}
-          OCI_REGION: ${{ secrets.OCI_REGION || 'us-ashburn-1' }}
-          OCI_SUBNET_OCID: ${{ secrets.OCI_SUBNET_OCID }}
-          OCI_SSH_PUBLIC_KEY: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
-        run: |
-          python launch_instance.py
-
-      - name: Send Email Alert to akmalnauman396@gmail.com
-        if: steps.claim.outputs.server_created == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: "🎉 YOUR ORACLE SERVER IS CREATED! (nauman-studio-vps)",
-              body: `Hello Nauman,\n\n🎉 GREAT NEWS! Your Always-Free 4-core, 24 GB RAM Ampere A1 server (nauman-studio-vps) has just been successfully created in Oracle Cloud (${process.env.OCI_REGION || 'us-ashburn-1'})!\n\nInstance OCID: ${{ steps.claim.outputs.instance_id }}\nAvailability Domain: ${{ steps.claim.outputs.ad_name }}\nTarget Notification: akmalnauman396@gmail.com\n\nYou can now log in to your Oracle Console or connect via SSH to deploy PeakCut!`
-            });
-name: OCI Ampere A1 Auto-Claimer
-
-on:
-  schedule:
-    # Runs every 10 minutes automatically 24/7/365 in Microsoft/GitHub's US datacenter
-    - cron: '*/10 * * * *'
-  workflow_dispatch: # Allows you to click "Run workflow" manually anytime
-
-jobs:
-  claim-server:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install OCI Python SDK
-        run: |
-          pip install --upgrade pip
-          pip install oci
-
-      - name: Run Provisioning Loop
-        env:
-          OCI_USER_OCID: ${{ secrets.OCI_USER_OCID }}
-          OCI_TENANCY_OCID: ${{ secrets.OCI_TENANCY_OCID }}
-          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
-          OCI_KEY_CONTENT: ${{ secrets.OCI_KEY_CONTENT }}
-          OCI_REGION: ${{ secrets.OCI_REGION || 'us-ashburn-1' }}
-          OCI_SUBNET_OCID: ${{ secrets.OCI_SUBNET_OCID }}
-          OCI_SSH_PUBLIC_KEY: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
-        run: |
-          python launch_instance.py
