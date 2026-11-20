@@ -113,7 +113,7 @@ def main():
     # Pings an Availability Domain every 45 seconds (AD-1 -> AD-2 -> AD-3)
     start_time = time.time()
     MAX_RUN_SECONDS = 570  # 9.5 minutes to stay comfortably within the 10-minute cron
-    INTERVAL_SECONDS = 45
+    INTERVAL_SECONDS = 15
 
     attempt_counter = 0
     ad_index = 0
